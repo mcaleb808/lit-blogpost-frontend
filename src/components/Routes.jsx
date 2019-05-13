@@ -1,14 +1,35 @@
 import React from "react";
-import { Route } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
+import { connect } from "react-redux";
+import { PropTypes } from "prop-types";
+import Login from "../components/Auth/Login";
+import Home from "../components/Home/home";
 
-import Home from "./Home/home";
-import Login from "./Auth/Login";
-
-const Routes = () => (
-  <div>
-    <Route exact path="/" component={Home} />
-    <Route exact path="/login" component={Login} />
-  </div>
+export const Routes = ({ isLoggedIn }) => (
+  <Switch>
+    <Route
+      exact
+      path="/login"
+      render={props => (!isLoggedIn ? <Login /> : <Redirect to="/" />)}
+    />
+    <Route
+      exact
+      path="/"
+      render={props => (isLoggedIn ? <Home /> : <Redirect to="/login" />)}
+    />
+  </Switch>
 );
 
-export default Routes;
+Routes.propTypes = {
+  isLoggedIn: PropTypes.bool
+};
+
+Routes.defaultProps = {
+  isLoggedIn: false
+};
+
+export const mapStateToProps = ({ login: { isLoggedIn } }) => ({
+  isLoggedIn
+});
+
+export default connect(mapStateToProps)(Routes);
