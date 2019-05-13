@@ -5,7 +5,9 @@ import {
   INPUT_VALIDATION_SUCCESS,
   CLEAR_LOGIN,
   SUBMIT_LOGIN_FORM,
-  LOGIN_SUCCESS
+  LOGIN_SUCCESS,
+  FETCH_BLOG_FAILURE,
+  FETCH_BLOG_SUCCESS
 } from "../actions-types";
 import Axios from "axios";
 
@@ -24,13 +26,33 @@ export const loginSuccess = payload => ({
   payload
 });
 
+export const fetchBlogSuccess = payload => ({
+  type: FETCH_BLOG_SUCCESS,
+  payload
+});
+
+export const fetchBlog = () => dispatch => {
+  return Axios.get(`${API_URL}/posts?page=1`)
+    .then(res => {
+      dispatch(fetchBlogSuccess(res.data.posts));
+    })
+    .catch(err => {
+      dispatch({
+        type: FETCH_BLOG_FAILURE,
+        payload: err
+      });
+      return err;
+    });
+};
+
 export const loginUser = user => dispatch => {
   dispatch(submitLoginForm());
   return Axios.post(`${API_URL}/auth/login`, user)
     .then(res => {
       dispatch(clearLogin());
       dispatch(loginSuccess(res.data.data));
-      localStorage.setItem("token", res.token);
+      localStorage.setItem("token", res.data.token);
+      dispatch(fetchBlog());
       return res;
     })
     .catch(err => {
